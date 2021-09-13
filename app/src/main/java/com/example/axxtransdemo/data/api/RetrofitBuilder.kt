@@ -1,5 +1,6 @@
 package com.example.axxtransdemo.data.api
 
+import com.example.axxtransdemo.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -12,7 +13,7 @@ import java.io.IOException
 object RetrofitBuilder {
 
     private const val BASE_URL = "https://api.airtable.com/v0/"
-    private const val TOKEN = "keyrGFCg3esjd9TUw"
+    private const val TOKEN = BuildConfig.MY_API_KEY
 
 
 
