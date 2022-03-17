@@ -3,19 +3,22 @@ package com.example.axxtransdemo.ui
 import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.example.axxtransdemo.viewmodel.MainViewModel
 import com.example.axxtransdemo.MyViewModelFactory
 import com.example.axxtransdemo.R
 import com.example.axxtransdemo.data.model.Utility
 import com.example.axxtransdemo.data.model.util.AppUtils
 import com.example.axxtransdemo.databinding.FragmentSecondBinding
+import com.example.axxtransdemo.viewmodel.MainViewModel
+
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -54,8 +57,8 @@ class SecondFragment : Fragment() {
 
         if(arguments !=null) {
              PAN = arguments?.getString("pan").toString()
-             AccessPointName = arguments?.getString("AccessPointName").toString()
-             accessPoints = arguments?.getStringArrayList("accessPoints")!!
+//             AccessPointName = arguments?.getString("AccessPointName").toString()
+//             accessPoints = arguments?.getStringArrayList("accessPoints")!!
         }
 
         binding.buttonSecond.setOnClickListener {
@@ -82,20 +85,11 @@ class SecondFragment : Fragment() {
 
                 viewModel.updateUserEntreForToken(it.id, PAN)
 
-                if(Utility.isAnyElementCommon(this.accessPoints, it.fields.AccessPointRight)) {
                     var bundle = bundleOf("firstname" to fName, "lastname" to lName)
                     findNavController().navigate(
                         R.id.action_SecondFragment_to_ThirdFragment,
                         bundle
                     )
-                }else{
-                    var bundle = bundleOf("firstname" to fName, "lastname" to lName,
-                        "accessPointName" to AccessPointName)
-                    findNavController().navigate(
-                        R.id.action_SecondFragment_to_ThirdFragment,
-                        bundle
-                    )
-                }
 
                 viewModel.user.removeObservers(this)
 
@@ -133,6 +127,12 @@ class SecondFragment : Fragment() {
             else
                 dismissProgressDialog()
         })
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+
+            findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
+
+        }
     }
 
     private fun showProgressDialogFromServer(title: String, msg: String) {
@@ -152,5 +152,15 @@ class SecondFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        menu.findItem(R.id.action_settings).isVisible = false
+        super.onPrepareOptionsMenu(menu)
     }
 }

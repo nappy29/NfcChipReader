@@ -3,11 +3,8 @@ package com.example.axxtransdemo.data.api
 import com.example.axxtransdemo.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
 
 
 object RetrofitBuilder {

@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
+    var isNetworkAvailable = MutableLiveData<Boolean>()
     val errorMessage = MutableLiveData<String>()
     val user = MutableLiveData<User>()
     val accessPoints = MutableLiveData<List<AccessPoint>>()
@@ -29,24 +30,28 @@ class MainViewModel : ViewModel() {
     fun getUserByToken(token: String){
 
         var tokenStr = "Token=\"$token\""
-//        var tokenStr = "Token=\"$token\""
 
         loading.postValue(true)
+    if (isNetworkAvailable.value == true) {
 
         viewModelScope.launch {
             val response = mainRepository.getUserByToken(tokenStr)
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 Log.d("Response_message", response.body().toString())
-                if(response.body() != null && response.isSuccessful && response.body()?.records!!.isNotEmpty()) {
+                if (response.body() != null && response.isSuccessful && response.body()?.records!!.isNotEmpty()) {
 
                     user.postValue(response.body()!!.records[0])
                     loading.postValue(false)
-                }else if(response.body()?.records!!.isEmpty())
+                } else if (response.body()?.records!!.isEmpty())
                     user.postValue(null)
                 else
                     onError(response.message())
             }
         }
+
+      }else{
+            onError("No Internet connection")
+      }
     }
 
     fun getUserByName(firstName: String, lastName: String) {
@@ -78,16 +83,6 @@ class MainViewModel : ViewModel() {
 
             val body = JsonObject()
             body.add("fields", fields)
-
-            val bodi = "{" +
-                    "  \"fields\": {" +
-                    "    \"Token\": \"$token\"" +
-                    "" +
-                    "  }" +
-                    "}"
-
-//            var anything = Json()
-//            var body = JSONObject(bodi)
 
             updateSuccess.postValue(false)
 

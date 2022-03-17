@@ -2,21 +2,20 @@ package com.example.axxtransdemo.ui
 
 import android.app.AlertDialog
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.axxtransdemo.CtlessCardService
-import com.example.axxtransdemo.viewmodel.MainViewModel
 import com.example.axxtransdemo.MyViewModelFactory
 import com.example.axxtransdemo.R
 import com.example.axxtransdemo.data.adapter.CustomArrayAdapter
@@ -27,6 +26,12 @@ import com.example.axxtransdemo.data.model.Utility
 import com.example.axxtransdemo.data.model.util.AppUtils
 import com.example.axxtransdemo.data.model.util.BeepType
 import com.example.axxtransdemo.databinding.FragmentFirstBinding
+import com.example.axxtransdemo.viewmodel.ConnectionLiveData
+import com.example.axxtransdemo.viewmodel.MainViewModel
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -46,6 +51,12 @@ class FirstFragment : Fragment(), CtlessCardService.ResultListener {
 
     private var accessPoints: List<String>? = null
     private var accessPoint: AccessPoint? = null
+
+    lateinit var shared : SharedPreferences
+    lateinit var editor: SharedPreferences.Editor
+
+    protected lateinit var connectionLiveData: ConnectionLiveData
+
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -68,37 +79,46 @@ class FirstFragment : Fragment(), CtlessCardService.ResultListener {
 
         mCtlessCardService = CtlessCardService(requireActivity(), this)
 
+        shared = requireActivity().getSharedPreferences("pref" , Context.MODE_PRIVATE)
+        editor = shared.edit()
+
+        connectionLiveData = ConnectionLiveData(requireContext())
+
+
         viewModel = ViewModelProvider(this, MyViewModelFactory()).get(MainViewModel::class.java)
 
 //        binding.buttonFirst.setOnClickListener {
 //            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
 //        }
 
+        connectionLiveData.observe(viewLifecycleOwner) {
+            viewModel.isNetworkAvailable.value = it
+        }
+
+        viewModel.isNetworkAvailable.observe(viewLifecycleOwner){
+            dismissProgressDialog()
+            if(!it)
+            showAlertDialog2("Internet Connectivity needed", "Please make sure you have internet connection")
+        }
+
         viewModel.user.observe(viewLifecycleOwner, {
 
             dismissProgressDialog()
 
-            if(it != null) {
-
-                if(Utility.isAnyElementCommon(this.accessPoints!!, it.fields.AccessPointRight)){
+                if(it != null) {
                     var bundle = bundleOf("firstname" to it.fields.FirstName, "lastname" to it.fields.LastName)
                     findNavController().navigate(R.id.action_FirstFragment_to_thirdFragment, bundle)
-                }else{
-                    var bundle = bundleOf("firstname" to it.fields.FirstName, "lastname" to it.fields.LastName,
-                    "accessPointName" to this.accessPoint!!.fields.Name)
-                    findNavController().navigate(R.id.action_FirstFragment_to_thirdFragment, bundle)
+                } else {
+                    var bundle = bundleOf("pan" to PAN)
+                    findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)
                 }
-
-
-            } else {
-                var bundle = bundleOf("pan" to PAN, "accessPoints" to this.accessPoints,
-                "AccessPointName" to this.accessPoint!!.fields.Name)
-                findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)
-            }
         })
 
         viewModel.errorMessage.observe(viewLifecycleOwner, {
             Log.d("server_error_message", it)
+
+            if(it.equals("No Internet connection"))
+                showAlertDialog2("Internet Connectivity needed", "Please make sure you have internet connection")
         })
 
         viewModel.loading.observe(viewLifecycleOwner, {
@@ -108,13 +128,13 @@ class FirstFragment : Fragment(), CtlessCardService.ResultListener {
                 dismissProgressDialog()
         })
 
-        viewModel.getAccessPoints()
-
-        viewModel.accessPoints.observe(viewLifecycleOwner, {
-
-            Log.d("accesspoints",it.toString())
-            setupAutoCompleteView(it as ArrayList<AccessPoint>)
-        })
+//        viewModel.getAccessPoints()
+//
+//        viewModel.accessPoints.observe(viewLifecycleOwner, {
+//
+//            Log.d("accesspoints",it.toString())
+//            setupAutoCompleteView(it as ArrayList<AccessPoint>)
+//        })
     }
 
     override fun onDestroyView() {
@@ -211,6 +231,19 @@ class FirstFragment : Fragment(), CtlessCardService.ResultListener {
         }
     }
 
+    private fun showAlertDialog2(title: String, message: String) {
+        activity?.runOnUiThread{
+            mAlertDialog = AppUtils.showAlertDialog(
+                requireActivity(),
+                title,
+                message,
+                "OK",
+                "Cancel",
+                false
+            ) { _, _ -> mAlertDialog!!.dismiss() }
+        }
+    }
+
     private fun showCardDetailDialog(card: Card) {
         activity?.runOnUiThread {
             val title = "Card Detail"
@@ -279,18 +312,51 @@ class FirstFragment : Fragment(), CtlessCardService.ResultListener {
 
     private fun setupAutoCompleteView(accessPoints: List<AccessPoint>) {
 
-        val adapter = CustomArrayAdapter(requireContext(), R.layout.list_view_row, accessPoints)
+//        val adapter = CustomArrayAdapter(requireContext(), R.layout.list_view_row, accessPoints)
+//
+//        binding.autoCompleteTxt.setAdapter(adapter)
+//
+//        binding.autoCompleteTxt.setText(accessPoints[0].fields.Name)
+//        this.accessPoint = accessPoints[0]
+//        this.accessPoints = this.accessPoint!!.fields.AccessPointRight
+//
+//        binding.autoCompleteTxt.onItemClickListener =
+//            AdapterView.OnItemClickListener { parent, arg1, position, id ->
+//
+//                this.accessPoint = parent.getItemAtPosition(position) as AccessPoint
+//                binding.autoCompleteTxt.setText(this.accessPoint!!.fields.Name)
+//
+//                this.accessPoints = this.accessPoint!!.fields.AccessPointRight
+//            }
 
-        binding.autoCompleteTxt.setAdapter(adapter)
-        binding.autoCompleteTxt.onItemClickListener =
-            AdapterView.OnItemClickListener { parent, arg1, position, id ->
-                //TODO: You can your own logic.
+    }
 
-                this.accessPoint = parent.getItemAtPosition(position) as AccessPoint
-                binding.autoCompleteTxt.setText(this.accessPoint!!.fields.Name)
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setHasOptionsMenu(true)
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        when (item.itemId) {
+//            R.id.action_settings -> {
+//
+//
+//                findNavController().navigate(
+//                    R.id.action_FirstFragment_to_FourthFragment,
+//                )
+//                return true
+//            }
+//        }
+//        return super.onOptionsItemSelected(item)
+//    }
 
-                this.accessPoints = this.accessPoint!!.fields.AccessPointRight
-            }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        menu.findItem(R.id.action_settings).isVisible = false
+        super.onPrepareOptionsMenu(menu)
     }
 }

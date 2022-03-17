@@ -2,8 +2,8 @@
     <string name="app_name">AxxTransDemo</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
+    <string name="first_fragment_label">AxxConsumer App</string>
+    <string name="second_fragment_label">More Info</string>
     <string name="next">Next</string>
     <string name="continue_l">Continue</string>
 
@@ -13,6 +13,7 @@
     <string name="f_name_label">First name</string>
     <string name="l_name_label">Last name</string>
     <string name="cancel">Cancel</string>
-    <string name="result_msg">Sorry, you are not allowed to enter!</string>
-    <string name="third_fragment_label">Third Fragment</string>
+    <string name="result_msg">You are not allowed to enter!</string>
+    <string name="third_fragment_label">Dashboard</string>
+    <string name="settings">Settings</string>
 </resources>

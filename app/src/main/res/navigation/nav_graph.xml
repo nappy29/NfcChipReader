@@ -18,6 +18,10 @@
         <action
             android:id="@+id/action_FirstFragment_to_thirdFragment"
             app:destination="@id/ThirdFragment" />
+
+        <action
+            android:id="@+id/action_FirstFragment_to_FourthFragment"
+            app:destination="@id/SettingFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -31,7 +35,10 @@
 
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            app:destination="@id/FirstFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/SecondFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment
@@ -46,7 +53,23 @@
 
         <action
             android:id="@+id/action_ThirdFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/ThirdFragment"
+            app:popUpToInclusive="true"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/SettingFragment"
+        android:name="com.example.axxtransdemo.ui.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/setting_page">
+
+        <action
+            android:id="@+id/action_FourthFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+
 
     </fragment>
 </navigation>
